@@ -25,19 +25,33 @@ class PiicoDev_Unified_I2C(object):
         self.UnifiedWrite(addr, ad) # address pointer
         return self.UnifiedRead(addr, nbytes)
     
+    def UnifiedWrite(self, addr, buf, stop=True):
+        if _SYSNAME == 'microbit':
+            repeat = not(stop)
+            self.i2c.write(addr, buf, repeat)
+        else:
+            self.i2c.writeto(addr, buf, stop)    
+    
+    def UnifiedRead(self, addr, nbytes, stop=True):
+        if _SYSNAME == 'microbit':
+            repeat = not(stop)
+            return self.i2c.read(addr, nbytes, repeat)
+        else:
+            return self.i2c.readfrom(addr, nbytes, stop)
+    
     def __init__(self):
         self.i2c = i2c
         
         if _SYSNAME == 'microbit':
             self.sysPort = 'microbit'
-            self.UnifiedWrite = i2c.write
-            self.UnifiedRead = i2c.read
+#             self.UnifiedWrite = i2c.write
+#             self.UnifiedRead = i2c.read
             self.writeto_mem = self.writeto_mem
             self.readfrom_mem = self.readfrom_mem
             
         else:
             self.sysPort = 'machine'
-            self.UnifiedWrite = i2c.writeto
-            self.UnifiedRead = i2c.readfrom
+#             self.UnifiedWrite = i2c.writeto
+#             self.UnifiedRead = i2c.readfrom
             self.writeto_mem = i2c.writeto_mem # use machine's built-ins
             self.readfrom_mem = i2c.readfrom_mem
