@@ -5,7 +5,7 @@ PiicoDev.py: Unifies I2C drivers for different builds of micropython
 import os
 _SYSNAME = os.uname().sysname
 
-def sleep_ms2s(t):
+def sleep_ms2s(t): # RPi SBC only has sleep[sec]
     sleep(t/1000)
 
 # Run correct imports for different micropython ports
@@ -63,16 +63,6 @@ class PiicoDev_Unified_I2C(object):
         if _SYSNAME == 'microbit':
             repeat = not(stop)
             return self.i2c.read(addr, nbytes, repeat)
-        
-        elif _SYSNAME == 'Linux':
-            if nbytes == 2:
-                wordData = i2c.read_word_data(addr, 0x00).to_bytes(2, byteorder='little', signed=False)
-            data = bytearray([])
-            return data
-            for i in range(nbytes):
-                data += bytearray([i2c.read_byte(addr)])
-                print("    {}".format(data))
-            return data
             
         else:
             return self.i2c.readfrom(addr, nbytes, stop)
@@ -82,13 +72,9 @@ class PiicoDev_Unified_I2C(object):
         
         if _SYSNAME == 'microbit':
             self.sysPort = 'microbit'
-            self.writeto_mem = self.writeto_mem
-            self.readfrom_mem = self.readfrom_mem
         
-        if _SYSNAME == 'Linux':
+        elif _SYSNAME == 'Linux':
             self.sysPort = 'linux'
-#             self.writeto_mem = None # TODO
-#             self.readfrom_mem = None # TODO
         
         else:
             self.sysPort = 'machine'
