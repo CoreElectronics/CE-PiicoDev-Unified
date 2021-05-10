@@ -48,7 +48,7 @@ class PiicoDev_Unified_I2C(object):
             d = int.from_bytes(data, 'big')
             self.i2c.write_byte_data(addr, r, d)
         else:
-            self.i2c.UnifiedWrite(addr, reg + data)
+            i2c.UnifiedWrite(addr, reg + data)
             
             
     def read16(self, addr, reg):
