@@ -8,7 +8,7 @@ _SYSNAME = os.uname().sysname
 # Run correct imports for different micropython ports
 if _SYSNAME == 'microbit':
     from microbit import i2c
-    import utime.sleep_ms
+    from utime import sleep_ms as usleep_ms
     
 elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
     from smbus2 import SMBus
@@ -90,7 +90,7 @@ class PiicoDev_Unified_I2C(object):
             self.writeto_mem = self.writeto_mem
             self.readfrom_mem = self.readfrom_mem
        
-        if _SYSNAME == 'Linux':
+        elif _SYSNAME == 'Linux':
             self.sysPort = 'linux'
         
         else:
