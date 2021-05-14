@@ -8,10 +8,27 @@ _SYSNAME = os.uname().sysname
 # Run correct imports for different micropython ports
 if _SYSNAME == 'microbit':
     from microbit import i2c
+    from utime import sleep_ms as usleep_ms
+    
+elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
+    from smbus2 import SMBus
+    from time import sleep
+    i2c = SMBus(1)
+    
+    def sleep_ms(t):
+        sleep(t/1000)
+    
 else: # Vanilla machine implementation
     from machine import I2C
+    from utime import sleep_ms as usleep_ms
     i2c = I2C(0)
     
+
+def sleep_ms(t):
+    if _SYSNAME == 'Linux':
+        sleep(t/1000)
+    else:
+        usleep_ms(t)
 
 class PiicoDev_Unified_I2C(object):
     
@@ -30,28 +47,53 @@ class PiicoDev_Unified_I2C(object):
             repeat = not(stop)
             self.i2c.write(addr, buf, repeat)
         else:
-            self.i2c.writeto(addr, buf, stop)    
+            self.i2c.writeto(addr, buf, stop)
+    
+    def write8(self, addr, reg, data):
+        if _SYSNAME == 'Linux':
+            r = int.from_bytes(reg, 'big')
+            d = int.from_bytes(data, 'big')
+            self.i2c.write_byte_data(addr, r, d)
+        else:
+            self.UnifiedWrite(addr, reg + data)
+            
+    def read16(self, addr, reg):
+        if _SYSNAME == 'Linux':
+            regInt = int.from_bytes(reg, 'big')
+            return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
+        else:
+            self.UnifiedWrite(addr, reg, stop=False)
+            return self.UnifiedRead(addr, 2)
     
     def UnifiedRead(self, addr, nbytes, stop=True):
         if _SYSNAME == 'microbit':
             repeat = not(stop)
             return self.i2c.read(addr, nbytes, repeat)
+        
+        elif _SYSNAME == 'Linux':
+            if nbytes == 2:
+                wordData = i2c.read_word_data(addr, 0x00).to_bytes(2, byteorder='little', signed=False)
+            data = bytearray([])
+            return data
+            for i in range(nbytes):
+                data += bytearray([i2c.read_byte(addr)])
+                print("    {}".format(data))
+            return data
+            
         else:
             return self.i2c.readfrom(addr, nbytes, stop)
     
     def __init__(self):
         self.i2c = i2c
-        
         if _SYSNAME == 'microbit':
             self.sysPort = 'microbit'
-#             self.UnifiedWrite = i2c.write
-#             self.UnifiedRead = i2c.read
             self.writeto_mem = self.writeto_mem
             self.readfrom_mem = self.readfrom_mem
-            
+       
+        elif _SYSNAME == 'Linux':
+            self.sysPort = 'linux'
+        
         else:
             self.sysPort = 'machine'
-#             self.UnifiedWrite = i2c.writeto
-#             self.UnifiedRead = i2c.readfrom
             self.writeto_mem = i2c.writeto_mem # use machine's built-ins
             self.readfrom_mem = i2c.readfrom_mem
