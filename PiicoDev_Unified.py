@@ -5,23 +5,30 @@ PiicoDev.py: Unifies I2C drivers for different builds of micropython
 import os
 _SYSNAME = os.uname().sysname
 
-def sleep_ms2s(t): # RPi SBC only has sleep[sec]
-    sleep(t/1000)
-
 # Run correct imports for different micropython ports
 if _SYSNAME == 'microbit':
     from microbit import i2c
+    import utime.sleep_ms
     
 elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
     from smbus2 import SMBus
     from time import sleep
     i2c = SMBus(1)
-    sleep_ms = sleep_ms2s
+    
+    def sleep_ms(t):
+        sleep(t/1000)
     
 else: # Vanilla machine implementation
     from machine import I2C
+    from utime import sleep_ms as usleep_ms
     i2c = I2C(0)
     
+
+def sleep_ms(t):
+    if _SYSNAME == 'Linux':
+        sleep(t/1000)
+    else:
+        usleep_ms(t)
 
 class PiicoDev_Unified_I2C(object):
     
@@ -50,7 +57,6 @@ class PiicoDev_Unified_I2C(object):
         else:
             self.UnifiedWrite(addr, reg + data)
             
-            
     def read16(self, addr, reg):
         if _SYSNAME == 'Linux':
             regInt = int.from_bytes(reg, 'big')
@@ -63,17 +69,28 @@ class PiicoDev_Unified_I2C(object):
         if _SYSNAME == 'microbit':
             repeat = not(stop)
             return self.i2c.read(addr, nbytes, repeat)
+        
+        elif _SYSNAME == 'Linux':
+            if nbytes == 2:
+                wordData = i2c.read_word_data(addr, 0x00).to_bytes(2, byteorder='little', signed=False)
+            data = bytearray([])
+            return data
+            for i in range(nbytes):
+                data += bytearray([i2c.read_byte(addr)])
+                print("    {}".format(data))
+            return data
             
         else:
             return self.i2c.readfrom(addr, nbytes, stop)
     
     def __init__(self):
         self.i2c = i2c
-        
         if _SYSNAME == 'microbit':
             self.sysPort = 'microbit'
-        
-        elif _SYSNAME == 'Linux':
+            self.writeto_mem = self.writeto_mem
+            self.readfrom_mem = self.readfrom_mem
+       
+        if _SYSNAME == 'Linux':
             self.sysPort = 'linux'
         
         else:
