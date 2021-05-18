@@ -11,8 +11,9 @@ if _SYSNAME == 'microbit':
     from utime import sleep_ms as usleep_ms
     
 elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
-    from smbus2 import SMBus
+    from smbus2 import SMBus, i2c_msg
     from time import sleep
+    from math import ceil
     i2c = SMBus(1)
     
     def sleep_ms(t):
@@ -20,34 +21,57 @@ elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
     
 else: # Vanilla machine implementation
     from machine import I2C
-    from utime import sleep_ms as usleep_ms
+    from utime import sleep_ms
     i2c = I2C(0)
-    
-
-def sleep_ms(t):
-    if _SYSNAME == 'Linux':
-        sleep(t/1000)
-    else:
-        usleep_ms(t)
+   
 
 class PiicoDev_Unified_I2C(object):
+    def smbus_i2c_write(self, address, reg, data_p, length):
+            ret_val = 0
+            data = []
+            for index in range(length):
+                data.append(data_p[index])
+            msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff] + data)
+            self.i2c.i2c_rdwr(msg_w)
+            return ret_val
     
+    def smbus_i2c_read(self, address, reg, data_p, length):
+            ret_val = 0
+
+            msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff])
+            msg_r = i2c_msg.read(address, length)
+            self.i2c.i2c_rdwr(msg_w, msg_r)
+            if ret_val == 0:
+                for index in range(length):
+                    data_p[index] = ord(msg_r.buf[index])
+            return ret_val
+        
     # Implement machine library's Memory operations as standard bus operations (microbit-friendly)
     def writeto_mem(self, addr, memaddr, buf, *, addrsize=8):
-        ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
-        self.UnifiedWrite(addr, ad+buf)
+        if _SYSNAME == 'Linux':
+            self.smbus_i2c_write(addr, memaddr, buf, len(buf))
+        else:
+            ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
+            self.UnifiedWrite(addr, ad+buf)
         
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
-        ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
-        self.UnifiedWrite(addr, ad) # address pointer
-        return self.UnifiedRead(addr, nbytes)
+        if _SYSNAME == 'Linux':
+            data = [None] * nbytes # initialise empty list
+            self.smbus_i2c_read(addr, memaddr, data, nbytes)
+            return data
+        else:
+            ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
+            self.UnifiedWrite(addr, ad) # address pointer
+            return self.UnifiedRead(addr, nbytes)
     
     def UnifiedWrite(self, addr, buf, stop=True):
         if _SYSNAME == 'microbit':
             repeat = not(stop)
             self.i2c.write(addr, buf, repeat)
-        else:
+        elif _SYSNAME == 'machine':
             self.i2c.writeto(addr, buf, stop)
+        else:
+            print('board not supported')
     
     def write8(self, addr, reg, data):
         if _SYSNAME == 'Linux':
