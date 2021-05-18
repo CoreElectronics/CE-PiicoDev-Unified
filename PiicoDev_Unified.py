@@ -8,7 +8,7 @@ _SYSNAME = os.uname().sysname
 # Run correct imports for different micropython ports
 if _SYSNAME == 'microbit':
     from microbit import i2c
-    from utime import sleep_ms as usleep_ms
+    from utime import sleep_ms
     
 elif _SYSNAME == 'Linux': # For Raspberry Pi SBC
     from smbus2 import SMBus, i2c_msg
