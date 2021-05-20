@@ -26,19 +26,28 @@ else: # Vanilla machine implementation
    
 
 class PiicoDev_Unified_I2C(object):
-    def smbus_i2c_write(self, address, reg, data_p, length):
+    def smbus_i2c_write(self, address, reg, data_p, length, addrsize=8):
             ret_val = 0
             data = []
             for index in range(length):
                 data.append(data_p[index])
-            msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff] + data)
+            if addrsize == 8:
+                msg_w = i2c_msg.write(address, [reg] + data)
+            elif addrsize == 16:
+                msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff] + data)
+            else:
+                raise Exception("address must be 8 or 16 bits long only")
             self.i2c.i2c_rdwr(msg_w)
             return ret_val
     
-    def smbus_i2c_read(self, address, reg, data_p, length):
+    def smbus_i2c_read(self, address, reg, data_p, length, addrsize=8):
             ret_val = 0
-
-            msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff])
+            if addrsize == 8:
+                msg_w = i2c_msg.write(address, [reg]) # warning this is set up for 16-bit addresses
+            elif addrsize == 16:
+                msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff]) # warning this is set up for 16-bit addresses
+            else:
+                raise Exception("address must be 8 or 16 bits long only")
             msg_r = i2c_msg.read(address, length)
             self.i2c.i2c_rdwr(msg_w, msg_r)
             if ret_val == 0:
@@ -49,7 +58,7 @@ class PiicoDev_Unified_I2C(object):
     # Implement machine library's Memory operations as standard bus operations (microbit-friendly)
     def writeto_mem(self, addr, memaddr, buf, *, addrsize=8):
         if _SYSNAME == 'Linux':
-            self.smbus_i2c_write(addr, memaddr, buf, len(buf))
+            self.smbus_i2c_write(addr, memaddr, buf, len(buf), addrsize=addrsize)
         else:
             ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
             self.UnifiedWrite(addr, ad+buf)
@@ -57,7 +66,7 @@ class PiicoDev_Unified_I2C(object):
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
         if _SYSNAME == 'Linux':
             data = [None] * nbytes # initialise empty list
-            self.smbus_i2c_read(addr, memaddr, data, nbytes)
+            self.smbus_i2c_read(addr, memaddr, data, nbytes, addrsize=addrsize)
             return data
         else:
             ad = memaddr.to_bytes(addrsize//8,'big') # pad address for eg. 16 bit
@@ -68,10 +77,8 @@ class PiicoDev_Unified_I2C(object):
         if _SYSNAME == 'microbit':
             repeat = not(stop)
             self.i2c.write(addr, buf, repeat)
-        elif _SYSNAME == 'machine':
-            self.i2c.writeto(addr, buf, stop)
         else:
-            print('board not supported')
+            self.i2c.writeto(addr, buf, stop)
     
     def write8(self, addr, reg, data):
         if _SYSNAME == 'Linux':
@@ -95,14 +102,7 @@ class PiicoDev_Unified_I2C(object):
             return self.i2c.read(addr, nbytes, repeat)
         
         elif _SYSNAME == 'Linux':
-            if nbytes == 2:
-                wordData = i2c.read_word_data(addr, 0x00).to_bytes(2, byteorder='little', signed=False)
-            data = bytearray([])
-            return data
-            for i in range(nbytes):
-                data += bytearray([i2c.read_byte(addr)])
-                print("    {}".format(data))
-            return data
+            raise Exception('Unified write not compatible with Linux systems')
             
         else:
             return self.i2c.readfrom(addr, nbytes, stop)
