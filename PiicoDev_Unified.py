@@ -79,14 +79,21 @@ class PiicoDev_Unified_I2C(object):
             self.i2c.write(addr, buf, repeat)
         else:
             self.i2c.writeto(addr, buf, stop)
-    
+           
     def write8(self, addr, reg, data):
-        if _SYSNAME == 'Linux':
-            r = int.from_bytes(reg, 'big')
-            d = int.from_bytes(data, 'big')
-            self.i2c.write_byte_data(addr, r, d)
+        if reg is None:
+            if _SYSNAME == 'Linux':
+                d = int.from_bytes(data, 'big')
+                self.i2c.write_byte(addr, d)
+            else:
+                self.UnifiedWrite(addr, data)
         else:
-            self.UnifiedWrite(addr, reg + data)
+            if _SYSNAME == 'Linux':
+                r = int.from_bytes(reg, 'big')
+                d = int.from_bytes(data, 'big')
+                self.i2c.write_byte_data(addr, r, d)
+            else:
+                self.UnifiedWrite(addr, reg + data)
             
     def read16(self, addr, reg):
         if _SYSNAME == 'Linux':
