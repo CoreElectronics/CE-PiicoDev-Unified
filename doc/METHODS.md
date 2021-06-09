@@ -14,7 +14,7 @@ Where:
 Value | Type
 --- | ---
 addr | bytes
-memaddr | bytes
+memaddr | int
 reg | bytes
 data | bytes
 nbytes | int
