@@ -3,6 +3,8 @@ PiicoDev.py: Unifies I2C drivers for different builds of micropython
 """
 import os
 _SYSNAME = os.uname().sysname
+compat_ind = 1
+i2c_err_str = "PiicoDev could not communicate with module at address {}, check wiring"
 
 if _SYSNAME == 'microbit':
     from microbit import i2c
