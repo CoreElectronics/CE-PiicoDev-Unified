@@ -46,7 +46,6 @@ class I2CUnifiedMachine(I2CBase):
             print("Using supplied freq, sda and scl to create machine I2C")
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
         else:
-            print("Using default machine I2C")
             self.i2c = I2C(bus)
 
         self.writeto_mem = self.i2c.writeto_mem
