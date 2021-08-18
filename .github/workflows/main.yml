@@ -35,7 +35,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git commit -m "update min/PiicoDev_Unified.py" -a --allow-empty
+          git commit -m "Update min/PiicoDev_Unified.py" -a --allow-empty
           
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0
