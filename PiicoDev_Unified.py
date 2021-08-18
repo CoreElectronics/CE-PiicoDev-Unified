@@ -1,5 +1,5 @@
 """
-PiicoDev.py: Unifies I2C drivers for different builds of micropython
+PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
 """
 import os
 _SYSNAME = os.uname().sysname
