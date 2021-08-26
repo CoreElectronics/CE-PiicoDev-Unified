@@ -1,6 +1,8 @@
 name: minify
 
 on:
+  # Allow manual trigger
+  workflow_dispatch:
   # Triggers the workflow on push request events but only for the main branch
   push:
     branches: [ main ]
