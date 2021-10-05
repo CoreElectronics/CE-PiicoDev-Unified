@@ -73,7 +73,7 @@ class I2CUnifiedMicroBit(I2CBase):
         
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
         ad = memaddr.to_bytes(addrsize // 8, 'big')  # pad address for eg. 16 bit
-        i2c.write(addr, ad)
+        i2c.write(addr, ad, repeat=True)
         return i2c.read(addr, nbytes)    
     
     def write8(self, addr, reg, data):
