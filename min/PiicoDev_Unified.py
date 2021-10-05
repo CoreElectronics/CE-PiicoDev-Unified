@@ -37,7 +37,7 @@ class I2CUnifiedMicroBit(I2CBase):
 		A=freq
 		if A is not _A:print('Initialising I2C freq to {}'.format(A));microbit.i2c.init(freq=A)
 	def writeto_mem(B,addr,memaddr,buf,*,addrsize=8):A=memaddr.to_bytes(addrsize//8,_B);i2c.write(addr,A+buf)
-	def readfrom_mem(B,addr,memaddr,nbytes,*,addrsize=8):A=memaddr.to_bytes(addrsize//8,_B);i2c.write(addr,A);return i2c.read(addr,nbytes)
+	def readfrom_mem(B,addr,memaddr,nbytes,*,addrsize=8):A=memaddr.to_bytes(addrsize//8,_B);i2c.write(addr,A,repeat=_C);return i2c.read(addr,nbytes)
 	def write8(A,addr,reg,data):
 		if reg is _A:i2c.write(addr,data)
 		else:i2c.write(addr,reg+data)
