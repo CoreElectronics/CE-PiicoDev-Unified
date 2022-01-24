@@ -3,7 +3,7 @@ PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
 """
 import os
 _SYSNAME = os.uname().sysname
-compat_ind = 1
+compat_ind = 1.1
 i2c_err_str = "PiicoDev could not communicate with module at address 0x{:02X}, check wiring"
 
 if _SYSNAME == 'microbit':
@@ -150,3 +150,20 @@ def create_unified_i2c(bus=None, freq=None, sda=None, scl=None):
     else:
         i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
     return i2c
+
+
+"""
+Select an address from a list of candidates, given binary switch inputs (list, LSB-first)
+eg. initialise_address(switches=[0,1], candidate_addresses=[0x1A,0x2B,0x3C,0x4C]) returns 0x2B
+"""
+def initialise_address(switches=None, candidate_addresses=None):
+    if switches is not None: # Preference sourcing address from the asw (address-switch) argument
+            if type(switches) is list:
+                n = 0; sum=0
+                for i in switches:
+                    assert i==1 or i==0, "Entries in 'asw' must be 1 or 0"
+                    sum = sum + i*2**n
+                    n += 1
+                return candidate_addresses[sum]
+            elif type(switches) is int: return candidate_addresses[switches]
+    else: return candidate_addresses[0] # Returns the 0th candidate if no switch information given
