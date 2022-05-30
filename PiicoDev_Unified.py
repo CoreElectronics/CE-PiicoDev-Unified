@@ -6,6 +6,14 @@ _SYSNAME = os.uname().sysname
 compat_ind = 1
 i2c_err_str = "PiicoDev could not communicate with module at address 0x{:02X}, check wiring"
 
+piicodev_addr = { #A list of all PiicoDev sensors and possible addresses
+    "Atmospheric": [0x77,0x76],
+    "Laser distance": [0x29],
+    "Magnetometer":[0x3C],
+    "RGB": [0x08],
+    "Smart module alternate address":[range(9,23)]
+}
+
 if _SYSNAME == 'microbit':
     from microbit import i2c
     from utime import sleep_ms
@@ -37,6 +45,12 @@ class I2CBase:
 
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
         raise NotImplementedError("__init__")
+    
+    def scan(self):
+        raise NotImplementedError("scan")
+    
+    def scan_sensors(self):
+        raise NotImplementedError("scan_sensors")
 
 class I2CUnifiedMachine(I2CBase):
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
@@ -60,6 +74,9 @@ class I2CUnifiedMachine(I2CBase):
     def read16(self, addr, reg):
         self.i2c.writeto(addr, reg, False)
         return self.i2c.readfrom(addr, 2)
+    
+    def scan(self):
+        return self.i2c.scan()
 
 class I2CUnifiedMicroBit(I2CBase):
     def __init__(self, freq=None):
@@ -85,6 +102,9 @@ class I2CUnifiedMicroBit(I2CBase):
     def read16(self, addr, reg):
         i2c.write(addr, reg, repeat=True)
         return i2c.read(addr, 2)
+    
+    def scan(self):
+        return self.i2c.scan()
             
 class I2CUnifiedLinux(I2CBase):
     def __init__(self, bus=None):
@@ -141,6 +161,16 @@ class I2CUnifiedLinux(I2CBase):
     def read16(self, addr, reg):
         regInt = int.from_bytes(reg, 'big')
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
+    
+    def scan(self): #From Adafruit Blinka generic_linux
+        found = []
+        for addr in range(0, 0x80):
+            try:
+                self._i2c_bus.read_byte(addr)
+            except OSError:
+                continue
+            found.append(addr)
+        return found
 
 def create_unified_i2c(bus=None, freq=None, sda=None, scl=None):
     if _SYSNAME == 'microbit':
@@ -150,3 +180,20 @@ def create_unified_i2c(bus=None, freq=None, sda=None, scl=None):
     else:
         i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
     return i2c
+
+
+def scan_sensors(I2CUnifiedOS):
+    scn_str = ""
+    amnt_sens = len(piicodev_addr)
+    scn_addr = I2CUnifiedOS.scan()
+    for addr_curr in scn_addr:
+        flag=False
+        i = 0
+        for name, addr in piicodev_addr.items():
+            i = i+ 1
+            if addr_curr in addr:
+                scn_str = scn_str + (name + " on address " + str(hex(addr[addr.index(addr_curr)]))+"\n")
+                flag=True
+            elif flag==False and i == amnt_sens:
+                scn_str = scn_str + ("No found module on "+str(hex(addr_curr))+"\n")
+    return scn_str
