@@ -1,4 +1,4 @@
-echo This script will modify the /boot/config.txt file to enable I2C and set the correct baudrate (400k). 
+echo This script will modify the /boot/config.txt file to enable I2C and set the correct baudrate of 400kbps. 
 echo if you want to view the contents of this script, save it to a file. Run: curl -L https://piico.dev/i2csetup >> i2c-setup.sh
 while true
 do
