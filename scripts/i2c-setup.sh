@@ -6,17 +6,21 @@ do
  
       case $input in
             [yY][eE][sS]|[yY])
-                  sed -i.bak '/^dtparam=i2c_arm=' /boot/config.txt                                                                                # remove dtparam=i2c_arm=
-                  sed -i '/^dtparam=i2c_arm_baudrate=/d' /boot/config.txt                                                                         # remove dtparam=i2c_arm_baudrate=
-                  sed -i '$a# Added by PiicoDev: require I2C 400k baudrate\ndtparam=i2c_arm=on\ndtparam=i2c_arm_baudrate=400000' /boot/config.txt # add dtparam=i2c_arm=on and dtparam=i2c_arm_baudrate=400000
+                  # remove dtparam=i2c_arm=
+                  sed -i.bak '/^dtparam=i2c_arm=' /boot/config.txt
+                  # remove dtparam=i2c_arm_baudrate=
+                  sed -i '/^dtparam=i2c_arm_baudrate=/d' /boot/config.txt
+                  # add dtparam=i2c_arm=on and dtparam=i2c_arm_baudrate=400000
+                  sed -i '$a# Added by PiicoDev: require I2C 400k baudrate\ndtparam=i2c_arm=on\ndtparam=i2c_arm_baudrate=400000' /boot/config.txt
                   echo Setup complete. Please reboot.
                   break
                   ;;
             [nN][oO]|[nN])
-                  echo "Bye"
+                  echo Bye
                   break
                   ;;
             *)
+                  echo Incorrect input
                   ;;
       esac      
 done
