@@ -1,6 +1,6 @@
 echo ""
 echo "This script will modify the /boot/config.txt file to enable I2C and set the correct baudrate (400kbps). "
-echo "if you want to view the contents of this script, save it to a file. Run: curl -L https://piico.dev/i2csetup > i2c-setup.sh"
+echo "If you want to view the contents of this script, save it to a file. Run: curl -L https://piico.dev/i2csetup > i2c-setup.sh"
 echo "The script will run in 10 seconds.  Hit CTRL+C to abort"
 
 sleep 10
