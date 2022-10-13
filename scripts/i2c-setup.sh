@@ -13,4 +13,4 @@ sudo sed -i '/^dtparam=i2c_arm_baudrate=/d' /boot/config.txt
 sudo sed -i '/^# Added by PiicoDev:/d' /boot/config.txt
 # add dtparam=i2c_arm=on and dtparam=i2c_arm_baudrate=400000
 sudo sed -i '$a# Added by PiicoDev: require I2C and 400k baudrate\ndtparam=i2c_arm=on\ndtparam=i2c_arm_baudrate=400000' /boot/config.txt
-echo Setup complete. Please reboot.
+echo "Setup complete. Please reboot."
