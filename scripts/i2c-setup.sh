@@ -22,9 +22,5 @@ do
             echo "Bye"
             break
             ;;
-        *)
-            echo "Incorrect input"
-            break
-            ;;
     esac
 done
