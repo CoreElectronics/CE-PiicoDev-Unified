@@ -88,7 +88,7 @@ class I2CUnifiedMicroBit(I2CBase):
         return i2c.read(addr, 2)
             
 class I2CUnifiedLinux(I2CBase):
-    def __init__(self, bus=None, suppress_warnings=False):
+    def __init__(self, bus=None, suppress_warnings=True):
         if suppress_warnings == False:
             with open('/boot/config.txt') as config_file:
                 if 'dtparam=i2c_arm=on' in config_file.read():
@@ -156,7 +156,7 @@ class I2CUnifiedLinux(I2CBase):
         regInt = int.from_bytes(reg, 'big')
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
 
-def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=False):
+def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=True):
     if _SYSNAME == 'microbit':
         i2c = I2CUnifiedMicroBit(freq=freq)
     elif _SYSNAME == 'Linux':
