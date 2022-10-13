@@ -1,10 +1,11 @@
-"""
+'''
 PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
-"""
+'''
 import os
 _SYSNAME = os.uname().sysname
 compat_ind = 1
-i2c_err_str = "PiicoDev could not communicate with module at address 0x{:02X}, check wiring"
+i2c_err_str = 'PiicoDev could not communicate with module at address 0x{:02X}, check wiring'
+setupi2c_str = ', run "sudo curl -L https://piico.dev/i2csetup | bash". Suppress this warning by setting suppress_warnings=True'
 
 if _SYSNAME == 'microbit':
     from microbit import i2c
@@ -24,26 +25,26 @@ else:
 
 class I2CBase:
     def writeto_mem(self, addr, memaddr, buf, *, addrsize=8):
-        raise NotImplementedError("writeto_mem")
+        raise NotImplementedError('writeto_mem')
 
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
-        raise NotImplementedError("readfrom_mem")
+        raise NotImplementedError('readfrom_mem')
 
     def write8(self, addr, buf, stop=True):
-        raise NotImplementedError("write")
+        raise NotImplementedError('write')
 
     def read16(self, addr, nbytes, stop=True):
-        raise NotImplementedError("read")
+        raise NotImplementedError('read')
 
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
-        raise NotImplementedError("__init__")
+        raise NotImplementedError('__init__')
 
 class I2CUnifiedMachine(I2CBase):
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
         if bus is None:
             bus = 0
         if freq is not None and sda is not None and scl is not None:
-            print("Using supplied freq, sda and scl to create machine I2C")
+            print('Using supplied freq, sda and scl to create machine I2C')
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
         else:
             self.i2c = I2C(bus)
@@ -64,7 +65,7 @@ class I2CUnifiedMachine(I2CBase):
 class I2CUnifiedMicroBit(I2CBase):
     def __init__(self, freq=None):
         if freq is not None:
-            print("Initialising I2C freq to {}".format(freq))
+            print('Initialising I2C freq to {}'.format(freq))
             microbit.i2c.init(freq=freq)
             
     def writeto_mem(self, addr, memaddr, buf, *, addrsize=8):
@@ -87,7 +88,20 @@ class I2CUnifiedMicroBit(I2CBase):
         return i2c.read(addr, 2)
             
 class I2CUnifiedLinux(I2CBase):
-    def __init__(self, bus=None):
+    def __init__(self, bus=None, suppress_warnings=False):
+        if suppress_warnings == False:
+            with open('/boot/config.txt') as config_file:
+                if 'dtparam=i2c_arm=on' in config_file.read():
+                    pass
+                else:
+                    print('I2C is not enabled. To enable' + setupi2c_str)
+                config_file.close()
+            with open('/boot/config.txt') as config_file:
+                if 'dtparam=i2c_arm_baudrate=400000' in config_file.read():
+                    pass
+                else:
+                    print('Slow baudrate detected. If glitching occurs' + setupi2c_str)
+                config_file.close()
         if bus is None:
             bus = 1
         self.i2c = SMBus(bus)
@@ -110,7 +124,7 @@ class I2CUnifiedLinux(I2CBase):
         elif addrsize == 16:
             msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff] + data)
         else:
-            raise Exception("address must be 8 or 16 bits long only")
+            raise Exception('address must be 8 or 16 bits long only')
         self.i2c.i2c_rdwr(msg_w)
         return ret_val
         
@@ -121,7 +135,7 @@ class I2CUnifiedLinux(I2CBase):
         elif addrsize == 16:
             msg_w = i2c_msg.write(address, [reg >> 8, reg & 0xff]) # warning this is set up for 16-bit addresses
         else:
-            raise Exception("address must be 8 or 16 bits long only")
+            raise Exception('address must be 8 or 16 bits long only')
         msg_r = i2c_msg.read(address, length)
         self.i2c.i2c_rdwr(msg_w, msg_r)
         if ret_val == 0:
@@ -142,11 +156,11 @@ class I2CUnifiedLinux(I2CBase):
         regInt = int.from_bytes(reg, 'big')
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
 
-def create_unified_i2c(bus=None, freq=None, sda=None, scl=None):
+def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=False):
     if _SYSNAME == 'microbit':
         i2c = I2CUnifiedMicroBit(freq=freq)
     elif _SYSNAME == 'Linux':
-        i2c = I2CUnifiedLinux(bus=bus)
+        i2c = I2CUnifiedLinux(bus=bus, suppress_warnings=suppress_warnings)
     else:
         i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
     return i2c
