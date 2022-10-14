@@ -1,4 +1,4 @@
-'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\n'
+'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n'
 _F='address must be 8 or 16 bits long only'
 _E='microbit'
 _D=False
@@ -14,7 +14,7 @@ if _SYSNAME==_E:from microbit import i2c;from utime import sleep_ms
 elif _SYSNAME=='Linux':
 	from smbus2 import SMBus,i2c_msg;from time import sleep;from math import ceil
 	def sleep_ms(t):sleep(t/1000)
-else:from machine import I2C;from utime import sleep_ms
+else:from machine import I2C,Pin;from utime import sleep_ms
 class I2CBase:
 	def writeto_mem(A,addr,memaddr,buf,*,addrsize=8):raise NotImplementedError('writeto_mem')
 	def readfrom_mem(A,addr,memaddr,nbytes,*,addrsize=8):raise NotImplementedError('readfrom_mem')
@@ -23,10 +23,8 @@ class I2CBase:
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):raise NotImplementedError('__init__')
 class I2CUnifiedMachine(I2CBase):
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):
-		B=bus
-		if B is _A:B=0
-		if freq is not _A and sda is not _A and scl is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(B,freq=freq,sda=sda,scl=scl)
-		else:A.i2c=I2C(B)
+		if bus is not _A and freq is not _A and sda is not _A and scl is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(bus,freq=freq,sda=sda,scl=scl)
+		else:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=100000)
 		A.writeto_mem=A.i2c.writeto_mem;A.readfrom_mem=A.i2c.readfrom_mem
 	def write8(A,addr,reg,data):
 		if reg is _A:A.i2c.writeto(addr,data)
