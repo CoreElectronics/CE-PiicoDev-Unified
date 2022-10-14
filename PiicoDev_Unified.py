@@ -1,5 +1,8 @@
 '''
 PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
+Changelog:
+    - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi 
+    - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)
 '''
 import os
 _SYSNAME = os.uname().sysname
@@ -20,7 +23,7 @@ elif _SYSNAME == 'Linux':
         sleep(t/1000)
 
 else:
-    from machine import I2C
+    from machine import I2C, Pin
     from utime import sleep_ms
 
 class I2CBase:
@@ -41,13 +44,11 @@ class I2CBase:
 
 class I2CUnifiedMachine(I2CBase):
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
-        if bus is None:
-            bus = 0
-        if freq is not None and sda is not None and scl is not None:
+        if bus is not None and freq is not None and sda is not None and scl is not None:
             print('Using supplied freq, sda and scl to create machine I2C')
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
         else:
-            self.i2c = I2C(bus)
+            self.i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 
         self.writeto_mem = self.i2c.writeto_mem
         self.readfrom_mem = self.i2c.readfrom_mem
