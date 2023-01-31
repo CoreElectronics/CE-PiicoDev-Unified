@@ -3,6 +3,7 @@ PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
 Changelog:
     - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi 
     - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)
+    - 2023-01-31 L.Howell Add minimal support for ESP32
 '''
 import os
 _SYSNAME = os.uname().sysname
