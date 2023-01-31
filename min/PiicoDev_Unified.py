@@ -1,4 +1,4 @@
-'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n'
+'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n    - 2023-01-31 L.Howell Add minimal support for ESP32\n'
 _F='address must be 8 or 16 bits long only'
 _E='microbit'
 _D=False
@@ -23,7 +23,9 @@ class I2CBase:
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):raise NotImplementedError('__init__')
 class I2CUnifiedMachine(I2CBase):
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):
-		if bus is not _A and freq is not _A and sda is not _A and scl is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(bus,freq=freq,sda=sda,scl=scl)
+		E=scl;D=sda;C=freq;B=bus
+		if B is not _A and C is not _A and D is not _A and E is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(B,freq=C,sda=D,scl=E)
+		elif _SYSNAME=='esp32'and(B is _A and C is _A and D is _A and E is _A):raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
 		else:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=100000)
 		A.writeto_mem=A.i2c.writeto_mem;A.readfrom_mem=A.i2c.readfrom_mem
 	def write8(A,addr,reg,data):
