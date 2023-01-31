@@ -3,6 +3,7 @@ PiicoDev.py: Unifies I2C drivers for different builds of MicroPython
 Changelog:
     - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi 
     - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)
+    - 2023-01-31 L.Howell Add minimal support for ESP32
 '''
 import os
 _SYSNAME = os.uname().sysname
@@ -47,6 +48,8 @@ class I2CUnifiedMachine(I2CBase):
         if bus is not None and freq is not None and sda is not None and scl is not None:
             print('Using supplied freq, sda and scl to create machine I2C')
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
+        elif _SYSNAME == 'esp32' and (bus is None and freq is None and sda is None and scl is None):
+            raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
         else:
             self.i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 
