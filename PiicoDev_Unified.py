@@ -47,6 +47,8 @@ class I2CUnifiedMachine(I2CBase):
         if bus is not None and freq is not None and sda is not None and scl is not None:
             print('Using supplied freq, sda and scl to create machine I2C')
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
+        elif _SYSNAME == 'esp32' and (bus is None and freq is None and sda is None and scl is None):
+            raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
         else:
             self.i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 
