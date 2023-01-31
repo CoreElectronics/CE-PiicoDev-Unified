@@ -44,8 +44,14 @@ class I2CBase:
 
 class I2CUnifiedMachine(I2CBase):
     def __init__(self, bus=None, freq=None, sda=None, scl=None):
-        self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
-        
+        if bus is not None and freq is not None and sda is not None and scl is not None:
+            print('Using supplied freq, sda and scl to create machine I2C')
+            self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
+        elif _SYSNAME == 'esp32' and (bus is None and freq is None and sda is None and scl is None):
+            raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
+        else:
+            self.i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
+
         self.writeto_mem = self.i2c.writeto_mem
         self.readfrom_mem = self.i2c.readfrom_mem
 
@@ -153,24 +159,11 @@ class I2CUnifiedLinux(I2CBase):
         regInt = int.from_bytes(reg, 'big')
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
 
-def create_unified_i2c(i2c_obj=None, bus=None, freq=None, sda=None, scl=None, suppress_warnings=True):
-    if i2c_obj is None:
-        if _SYSNAME == 'microbit':
-            i2c = I2CUnifiedMicroBit(freq=freq)
-        elif _SYSNAME == 'Linux':
-            i2c = I2CUnifiedLinux(bus=bus, suppress_warnings=suppress_warnings)
-            
-        elif _SYSNAME == 'rp2040' or _SYSNAME == 'esp32':
-            bus = 0
-            freq = 100000
-            if _SYSNAME == 'rp2040':
-                scl=Pin(9)
-                sda=Pin(8)
-            if _SYSNAME == 'esp32' and (sda is None or scl is None):
-                raise Exception('Please assign SDA and SCL Pins for ESP32')
-            i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
-        else:
-            i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
+def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=True):
+    if _SYSNAME == 'microbit':
+        i2c = I2CUnifiedMicroBit(freq=freq)
+    elif _SYSNAME == 'Linux':
+        i2c = I2CUnifiedLinux(bus=bus, suppress_warnings=suppress_warnings)
     else:
-        i2c = i2c_obj
+        i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
     return i2c
