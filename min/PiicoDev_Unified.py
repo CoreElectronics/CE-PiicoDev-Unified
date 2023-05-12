@@ -26,7 +26,7 @@ class I2CUnifiedMachine(I2CBase):
 		E=scl;D=sda;C=freq;B=bus
 		if B is not _A and C is not _A and D is not _A and E is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(B,freq=C,sda=D,scl=E)
 		elif _SYSNAME=='esp32'and(B is _A and C is _A and D is _A and E is _A):raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
-		else:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=100000,timeout=110000)
+		else:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=400000)
 		A.writeto_mem=A.i2c.writeto_mem;A.readfrom_mem=A.i2c.readfrom_mem
 	def write8(A,addr,reg,data):
 		if reg is _A:A.i2c.writeto(addr,data)
