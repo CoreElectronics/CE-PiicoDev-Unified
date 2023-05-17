@@ -1,4 +1,4 @@
-'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2022-10-13 P.Johnston Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n    - 2023-01-31 L.Howell Add minimal support for ESP32\n'
+'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2021       M.Ruppe - Initial Unified Driver\n    - 2022-10-13 P.Johnston - Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe - Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n    - 2023-01-31 L.Howell - Add minimal support for ESP32\n    - 2023-05-17 M.Ruppe - Make I2CUnifiedMachine() more flexible on initialisation. Frequency is optional.\n'
 _F='address must be 8 or 16 bits long only'
 _E='microbit'
 _D=False
@@ -23,10 +23,12 @@ class I2CBase:
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):raise NotImplementedError('__init__')
 class I2CUnifiedMachine(I2CBase):
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):
-		E=scl;D=sda;C=freq;B=bus
-		if B is not _A and C is not _A and D is not _A and E is not _A:print('Using supplied freq, sda and scl to create machine I2C');A.i2c=I2C(B,freq=C,sda=D,scl=E)
-		elif _SYSNAME=='esp32'and(B is _A and C is _A and D is _A and E is _A):raise Exception('Please input bus, frequency, machine.pin SDA and SCL objects to use ESP32')
-		else:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=400000)
+		E=scl;D=sda;C=bus;B=freq
+		if _SYSNAME=='esp32'and(C is _A or D is _A or E is _A):raise Exception('Please input bus, machine.pin SDA, and SCL objects to use ESP32')
+		if B is _A:B=400000
+		if C is not _A and D is not _A and E is not _A:print(f"Using supplied bus, sda, and scl to create machine.I2C() with freq: {B} Hz");A.i2c=I2C(C,freq=B,sda=D,scl=E)
+		elif C is _A and D is _A and E is _A:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=B)
+		else:raise Exception('Please provide at least bus, sda, and scl')
 		A.writeto_mem=A.i2c.writeto_mem;A.readfrom_mem=A.i2c.readfrom_mem
 	def write8(A,addr,reg,data):
 		if reg is _A:A.i2c.writeto(addr,data)
