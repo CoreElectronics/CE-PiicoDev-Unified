@@ -51,6 +51,9 @@ class I2CUnifiedMachine(I2CBase):
             raise Exception('Please input bus, machine.pin SDA, and SCL objects to use ESP32')
         
         if freq is None: freq = 400_000
+        if not isinstance(freq, (int)):
+            raise ValueError("freq must be an Int")
+        if freq < 400_000: print(f"\033[91mWarning: minimum freq 400kHz is recommended if using OLED module.\033[0m")
         if bus is not None and sda is not None and scl is not None:
             print(f'Using supplied bus, sda, and scl to create machine.I2C() with freq: {freq} Hz')
             self.i2c = I2C(bus, freq=freq, sda=sda, scl=scl)
