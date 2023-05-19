@@ -22,14 +22,16 @@ class I2CBase:
 	def read16(A,addr,nbytes,stop=_B):raise NotImplementedError('read')
 	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):raise NotImplementedError('__init__')
 class I2CUnifiedMachine(I2CBase):
-	def __init__(A,bus=_A,freq=_A,sda=_A,scl=_A):
-		E=scl;D=sda;C=bus;B=freq
+	def __init__(B,bus=_A,freq=_A,sda=_A,scl=_A):
+		E=scl;D=sda;C=bus;A=freq
 		if _SYSNAME=='esp32'and(C is _A or D is _A or E is _A):raise Exception('Please input bus, machine.pin SDA, and SCL objects to use ESP32')
-		if B is _A:B=400000
-		if C is not _A and D is not _A and E is not _A:print(f"Using supplied bus, sda, and scl to create machine.I2C() with freq: {B} Hz");A.i2c=I2C(C,freq=B,sda=D,scl=E)
-		elif C is _A and D is _A and E is _A:A.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=B)
+		if A is _A:A=400000
+		if not isinstance(A,int):raise ValueError('freq must be an Int')
+		if A<400000:print(f"[91mWarning: minimum freq 400kHz is recommended if using OLED module.[0m")
+		if C is not _A and D is not _A and E is not _A:print(f"Using supplied bus, sda, and scl to create machine.I2C() with freq: {A} Hz");B.i2c=I2C(C,freq=A,sda=D,scl=E)
+		elif C is _A and D is _A and E is _A:B.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=A)
 		else:raise Exception('Please provide at least bus, sda, and scl')
-		A.writeto_mem=A.i2c.writeto_mem;A.readfrom_mem=A.i2c.readfrom_mem
+		B.writeto_mem=B.i2c.writeto_mem;B.readfrom_mem=B.i2c.readfrom_mem
 	def write8(A,addr,reg,data):
 		if reg is _A:A.i2c.writeto(addr,data)
 		else:A.i2c.writeto(addr,reg+data)
