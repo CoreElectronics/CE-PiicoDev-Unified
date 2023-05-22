@@ -27,8 +27,8 @@ class I2CUnifiedMachine(I2CBase):
 		if _SYSNAME=='esp32'and(C is _A or D is _A or E is _A):raise Exception('Please input bus, machine.pin SDA, and SCL objects to use ESP32')
 		if A is _A:A=400000
 		if not isinstance(A,int):raise ValueError('freq must be an Int')
-		if A<400000:print(f"[91mWarning: minimum freq 400kHz is recommended if using OLED module.[0m")
-		if C is not _A and D is not _A and E is not _A:print(f"Using supplied bus, sda, and scl to create machine.I2C() with freq: {A} Hz");B.i2c=I2C(C,freq=A,sda=D,scl=E)
+		if A<400000:print('\x1b[91mWarning: minimum freq 400kHz is recommended if using OLED module.\x1b[0m')
+		if C is not _A and D is not _A and E is not _A:print('Using supplied bus, sda, and scl to create machine.I2C() with freq: {} Hz'.format(A));B.i2c=I2C(C,freq=A,sda=D,scl=E)
 		elif C is _A and D is _A and E is _A:B.i2c=I2C(0,scl=Pin(9),sda=Pin(8),freq=A)
 		else:raise Exception('Please provide at least bus, sda, and scl')
 		B.writeto_mem=B.i2c.writeto_mem;B.readfrom_mem=B.i2c.readfrom_mem
