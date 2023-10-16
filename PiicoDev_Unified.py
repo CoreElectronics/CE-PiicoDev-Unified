@@ -219,30 +219,30 @@ class PiicoDev_test():
         
     Available functions
     -------------------
-        clear()					- clears the list of connected i2c devices
-        rescan()				- clears and rescans the default i2c bus and repopulates the list
-        show()					- prints the list of connected ID's detected by the original/most recent scan
-        is_ID_connected(id)		- returns 1 if the ID is in the list, otherwise 0
-        how_many_connected()	- returns count of detected ID's
+        clear()                 - clears the list of connected i2c devices
+        rescan()                - clears and rescans the default i2c bus and repopulates the list
+        show()                  - prints the list of connected ID's detected by the original/most recent scan
+        is_ID_connected(id)     - returns 1 if the ID is in the list, otherwise 0
+        how_many_connected()    - returns count of detected ID's
         
-        details()				- prints 'human name' of the connected ID's e.g. 'OLED Module'
-            details('what')		- prints 'human name' of the connected ID's e.g. 'OLED Module'       
-            details('short')	- prints 'short_name' of the connected ID's e.g. 'SSD1306'
-            details('long')		- prints 'long_name' of the connected ID's e.g. 'PiicoDev OLED Module SSD1306'
+        details()               - prints 'human name' of the connected ID's e.g. 'OLED Module'
+            details('what')     - prints 'human name' of the connected ID's e.g. 'OLED Module'       
+            details('short')    - prints 'short_name' of the connected ID's e.g. 'SSD1306'
+            details('long')     - prints 'long_name' of the connected ID's e.g. 'PiicoDev OLED Module SSD1306'
             
-        what_is(id)				- prints 'human name' of the connected ID e.g. 'RGB LED Module'
-            what_is(id, 'what')	- prints 'human name' of the connected ID e.g. 'RGB LED Module'
-            what_is(id, 'short')- prints 'short_name' of the connected ID e.g. 'LED'
-            what_is(id, 'long')	- prints 'long_name' of the connected ID e.g. 'PiicoDev 3x RGB LED Module'
+        what_is(id)             - prints 'human name' of the given ID e.g. 'RGB LED Module'
+            what_is(id, 'what') - prints 'human name' of the given ID e.g. 'RGB LED Module'
+            what_is(id, 'short')- prints 'short_name' of the given ID e.g. 'LED'
+            what_is(id, 'long') - prints 'long_name' of the given ID e.g. 'PiicoDev 3x RGB LED Module'
             
-        show_all()				- prints all 'human names' from the main internal dictonary
-            show_all('what')	- prints all 'human names' from the main internal dictonary
-            show_all('short')	- prints all 'short names' from the main internal dictonary
-            show_all('long')	- prints all 'long names' from the main internal dictonary
+        show_all()              - prints all 'human names' from the main internal dictonary
+            show_all('what')    - prints all 'human names' from the main internal dictonary
+            show_all('short')   - prints all 'short names' from the main internal dictonary
+            show_all('long')    - prints all 'long names' from the main internal dictonary
           ** with extra option 'show' also displays similar entries from the conflicts dictionary
-            show_all('what', 'show')	- prints all 'human names' from the conflict internal dictonary
-            show_all('short', show')	- prints all 'shout names' from the conflict internal dictonary
-            show_all('long', 'show')	- prints all 'long names' from the conflict internal dictonary
+            show_all('what', 'show')    - prints all 'human names' from the conflict internal dictonary
+            show_all('short', show')    - prints all 'shout names' from the conflict internal dictonary
+            show_all('long', 'show')    - prints all 'long names' from the conflict internal dictonary
             
     Address conflicts
     -----------------
@@ -260,9 +260,9 @@ class PiicoDev_test():
     
     These constants can be used after instantiation in user code
     
-        tests.__BME280_ID   	# ==  0x77 or 119. this is a fixed address
-        tests.__VEML6030_0_ID	# ==  0x10 or 16.  this is the value when the ASW is OFF  
-        tests.__VEML6030_1_ID	# ==  0x48 or 72.  this is the value is the ASW is ON  
+        tests.__BME280_ID       # ==  0x77 or 119. this is a fixed address
+        tests.__VEML6030_0_ID   # ==  0x10 or 16.  this is the value when the ASW is OFF  
+        tests.__VEML6030_1_ID   # ==  0x48 or 72.  this is the value is the ASW is ON  
     
     """
     
