@@ -221,7 +221,8 @@ class PiicoDev_test():
     -------------------
         clear()                 - clears the list of connected i2c devices
         rescan()                - clears and rescans the default i2c bus and repopulates the list
-        show()                  - prints the list of connected ID's detected by the original/most recent scan
+        show_int()              - prints the list of connected ID's in DECIMAL detected by the original/most recent scan
+        show_hex()              - prints the list of connected ID's in HEXADECIMAL detected by the original/most recent scan
         is_ID_connected(id)     - returns 1 if the ID is in the list, otherwise 0
         how_many_connected()    - returns count of detected ID's
         
@@ -428,9 +429,12 @@ class PiicoDev_test():
         self.connected = []
         self.connected = self.i2c.scan()
     
-    def show(self):
+    def show_int(self):
         print(self.connected)
     
+    def show_hex(self):
+        print( [hex(i) for i in self.connected] )
+
     def is_ID_connected(self, id):
         if _Debug == 1:
             print('is_ID_connected(',id,')')
@@ -528,7 +532,8 @@ if _Debug:
     tests.rescan()
     print(tests.connected)
     print('show()')
-    tests.show()
+    tests.show_int()
+    tests.show_hex()
     print('how many')
     aa = tests.how_many_connected()
     print(aa)
