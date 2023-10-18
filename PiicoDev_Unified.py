@@ -206,7 +206,12 @@ class PiicoDev_test():
     =========================
     Instantiation
     -------------
+        # the default for standard PiicoDev setup
         tests = PiicoDev_test()
+    OR
+        # for an alternate i2c bus on GPIO6 and GPOI7
+        test_altbus = PiicoDev_test(id=1, scl=Pin(7), sda=Pin(6))
+       
     
     Immediately after this you can display what has been detected on the default i2c bus by either
     
@@ -265,19 +270,29 @@ class PiicoDev_test():
         tests.__VEML6030_0_ID   # ==  0x10 or 16.  this is the value when the ASW is OFF  
         tests.__VEML6030_1_ID   # ==  0x48 or 72.  this is the value is the ASW is ON  
     
+    NOTE: =============================================================================
+    NOTE:
+    NOTE: The "Constants" and the __TWO__ dictionary lists MUST be checked / updated
+    NOTE:    when new PiicoDev devices are created by Core Electronics
+    NOTE:     sorry team ;-)
+    NOTE:
+    NOTE: =============================================================================
     """
     
     #
     # declare "CONSTANTS"
     # these are used to uniquely identify the various (conflicting) PiicoDev addresses
+    #  note the 'conflict' markers   ----vv   and    ----^^
+    #
     #  can use outside the class if prefixed with instantiated classname
     #  i.e.
+    #
     # tests = PiicoDev_test()
     # if tests.is_ID_connected(tests.__BME280_ID):
     #    print('have BME280')
-
     #
-    __LED_ID = 0x8				# 8.      RGB LEDS
+
+    __LED_ID = 0x8                      # 8.      RGB LEDS
                                 # ----vv
     __VEML6030_0_ID = 0x10		# 16. xx  Light sensor (ASW off)
     __VEML6040_ID = 0x10		# 16. xx  Colour sensor
