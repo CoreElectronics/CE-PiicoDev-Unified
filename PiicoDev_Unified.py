@@ -278,10 +278,10 @@ class PiicoDev_test():
 
     #
     __LED_ID = 0x8				# 8.      RGB LEDS
-                                # ------
+                                # ----vv
     __VEML6030_0_ID = 0x10		# 16. xx  Light sensor (ASW off)
     __VEML6040_ID = 0x10		# 16. xx  Colour sensor
-                                # ------
+                                # ----^^
     __LIS3DH_1_ID = 0x18		# 24.     Accelerometer - ASW ON
     __LIS3DH_0_ID = 0x19		# 25.     Accelerometer - ASW OFF
     __TRANSCEIVER_ID = 0x1a		# 26.     Transceiver
@@ -289,20 +289,21 @@ class PiicoDev_test():
     __TOUCH_ID = 0x28			# 40.     Capacitive sensor
     __VL53L1X_ID = 0x29			# 41.     Laser distance sensor
     __RFID_ID = 0x2c			# 44.     RFID module
-                                # ------
+                                # ----vv
     __ULTRASONIC_ID = 0x35		# 53. xx  Ultrasonic rangefinder
-    __POTENTIOMETER_ID = 0x35	# 53. xx  Potentiometer
-                                # ------
+    __POTENTIOMETER_ID = 0x35           # 53. xx  Potentiometer
+                                # ----^^
     __SSD1306_ID = 0x3c			# 60.     OLED display
     __BUTTON_ID = 0x42			# 66.     Pushbutton
     __SERVO_ID = 0x44			# 68.     Servo controller
-                                # ------
+                                # ----vv
     __TMP117_ID = 0x48			# 72. xx  Temperature sensor
     __VEML6030_1_ID = 0x48		# 72. xx  Light sensor (ASW on)
-                                # ------
+                                # ----^^
+                                # ----vv
     __RV3028_ID = 0x52			# 82. xx  RTC
     __ENS160_1_ID = 0x52		# 82. xx  Air quality sensor (ASW on)
-                                # ------
+                                # ----^^
     __ENS160_0_ID = 0x53		# 83.     Air quality sensor (ASW off)
     __BUZZER_ID = 0x5c			# 92.     Buzzer
     __MS5637_ID = 0x76			# 118.    Pressuure sensor
@@ -418,8 +419,12 @@ class PiicoDev_test():
     }
 
 
-    def __init__(self):
-        self.i2c = I2C(id=0)
+    #
+    # PiicoDev defaults pre-defined
+    # can be overloaded with other values if needed to establish a second/alternate i2c bus
+    #
+    def __init__(self, id=0, scl=Pin(9), sda=Pin(8), freq=400_000):
+        self.i2c = I2C(id=id, scl=scl, sda=sda, freq=freq)
         self.connected = self.i2c.scan()
         
     def clear(self):
@@ -522,6 +527,9 @@ class PiicoDev_test():
 
 if _Debug:
     tests = PiicoDev_test()
+
+    # for an alternate i2c bus on GPIO6 and GPOI7
+    test_altbus = PiicoDev_test(id=1, scl=Pin(7), sda=Pin(6))
 
     print('tests.connected')
     print(tests.connected)
