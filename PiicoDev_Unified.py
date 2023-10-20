@@ -185,7 +185,7 @@ def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warning
 # Mjt 20231016
 #
 
-_Debug = 1	# can be chucked out, used to print short WIP messages, and to execute the function tests.
+_Debug = 0	# can be chucked out, used to print short WIP messages, and to execute the function tests.
 
 
 class PiicoDev_test():
@@ -235,7 +235,28 @@ class PiicoDev_test():
             details('what')     - prints 'human name' of the connected ID's e.g. 'OLED Module'       
             details('short')    - prints 'short_name' of the connected ID's e.g. 'SSD1306'
             details('long')     - prints 'long_name' of the connected ID's e.g. 'PiicoDev OLED Module SSD1306'
-            
+        *****
+        The details() function can also access a user defined dictionary of devices from other manufacturers.
+        The user dictionary MUST be in the same format as the internal dictionaries
+        
+            extern_list: dict = {
+                0x53: {		# 16.  0x10
+                    'what': 'Ambient Light-UV Sensor',
+                    'long_name': 'Adafruit LTR390 Ambient Light-UV Sensor',
+                    'short_name': 'LTR390'},
+                <nextID>: {    # possible comment
+                    'what': 'simple description',
+                    'long_name': 'lengthy description',
+                    'short_name': 'MFR code'},
+            }
+
+        then calliing the details() function as below _AFTER_ the user dictionary is defined, will
+        display this if the LTR390 is in the connected devices list
+        
+            details('what', extern_list ) - prints 'human name' of the connected ID's e.g. 'Ambient Light-UV Sensor'       
+            details('short', extern_list) - prints 'short_name' of the connected ID's e.g. 'LTR390'
+            details('long', extern_list)  - prints 'long_name' of the connected ID's e.g. 'Adafruit LTR390 Ambient Light-UV Sensor'
+
         what_is(id)             - prints 'human name' of the given ID e.g. 'RGB LED Module'
             what_is(id, 'what') - prints 'human name' of the given ID e.g. 'RGB LED Module'
             what_is(id, 'short')- prints 'short_name' of the given ID e.g. 'LED'
@@ -336,7 +357,7 @@ class PiicoDev_test():
             'short_name': 'LED'},
         __VEML6040_ID: {		# 16.  0x10
             'what': 'Colour Sensor',
-            'long_name': 'PiicoDev VEML6030 Colour Sensor',
+            'long_name': 'PiicoDev VEML6040 Colour Sensor',
             'short_name': 'VEML6040'},
         __LIS3DH_1_ID: {		# 24.  0x18
             'what': 'Accelerometer (ASW on)',
@@ -468,7 +489,7 @@ class PiicoDev_test():
             print('how_many__connected()')
         return(len(self.connected))
 
-    def details(self, mode='what'):
+    def details(self, mode='what', extlist=None):
         if _Debug == 1:
             print('details(',mode,')')
         if len(self.connected) == 0:
@@ -477,67 +498,107 @@ class PiicoDev_test():
             for i in self.connected:
                 hit = 0
                 if i in self.PiicoDev_list:
-                    if mode == 'long':
-                        s = self.PiicoDev_list[i]['long_name']
-                    elif mode == 'short':
-                        s = self.PiicoDev_list[i]['short_name']
-                    else:   # assume 'what'
-                        s = self.PiicoDev_list[i]['what']
-                    print(i, hex(i), s)
+                    self.print_main(i, mode)
+#                    if mode == 'long':
+#                        s = self.PiicoDev_list[i]['long_name']
+#                    elif mode == 'short':
+#                        s = self.PiicoDev_list[i]['short_name']
+#                    else:   # assume 'what'
+#                        s = self.PiicoDev_list[i]['what']
+#                    print(i, hex(i), s)
                     hit = 1
                 if i in self.PiicoDev_conf_list:
-                    if mode == 'long':
-                        s = self.PiicoDev_conf_list[i]['long_name']
-                    elif mode == 'short':
-                        s = self.PiicoDev_conf_list[i]['short_name']
-                    else:   # assume 'what'
-                        s = self.PiicoDev_conf_list[i]['what']
-                    print(i, hex(i), s, '<<<<< Possible conflict')
+                    print('   vvv Possible conflict vvv')
+                    self.print_conf(i, mode)
+#                    if mode == 'long':
+#                        s = self.PiicoDev_conf_list[i]['long_name']
+#                    elif mode == 'short':
+#                        s = self.PiicoDev_conf_list[i]['short_name']
+#                    else:   # assume 'what'
+#                        s = self.PiicoDev_conf_list[i]['what']
+#                    print(i, hex(i), s, '<<<<< Possible conflict')
                     hit = 1
+                if extlist != None:
+                    if i in extlist:
+                        print('   vvv EXTERNAL LIST --- Possible conflict vvv')
+                        if mode == 'long':
+                            s = extlist[i]['long_name']
+                        elif mode == 'short':
+                            s = extlist[i]['short_name']
+                        else:   # assume 'what'
+                            s = extlist[i]['what']
+                        print(i, hex(i), s)
+                        hit = 1
                 if hit == 0:
                     print('Unknown device at ID ', i)
 
     def what_is(self, id, mode='what'):
         hit = 0
         if id in self.PiicoDev_list:
-            if mode == 'long':
-                s = self.PiicoDev_list[id]['long_name']
-            elif mode == 'short':
-                s = self.PiicoDev_list[id]['short_name']
-            else:   # assume 'what'
-                s = self.PiicoDev_list[id]['what']
-            print('Found:', id, hex(id), s)
+            self.print_main(id, mode)
+#            if mode == 'long':
+#                s = self.PiicoDev_list[id]['long_name']
+#            elif mode == 'short':
+#                s = self.PiicoDev_list[id]['short_name']
+#            else:   # assume 'what'
+#                s = self.PiicoDev_list[id]['what']
+#            print('Found:', id, hex(id), s)
             hit = 1
         if id in self.PiicoDev_conf_list:
-            if mode == 'long':
-                s = self.PiicoDev_conf_list[id]['long_name']
-            elif mode == 'short':
-                s = self.PiicoDev_conf_list[id]['short_name']
-            else:   # assume 'what'
-                s = self.PiicoDev_conf_list[id]['what']
-            print('Found but possible conflict:', id, hex(id), s)
+            print('   vvv Possible conflict vvv')
+            self.print_conf(id, mode)
+#            if mode == 'long':
+#                s = self.PiicoDev_conf_list[id]['long_name']
+#            elif mode == 'short':
+#                s = self.PiicoDev_conf_list[id]['short_name']
+#            else:   # assume 'what'
+#                s = self.PiicoDev_conf_list[id]['what']
+#            print('Found but possible conflict:', id, hex(id), s)
             hit = 1
         if hit == 0:
             print('Unknown ID ', id)
 
     def show_all(self, mode='what', conf='noshow' ):
         for i in sorted(self.PiicoDev_list):
-            if mode == 'long':
-                print(i, hex(i), self.PiicoDev_list[i]['long_name'])
-            elif mode == 'short':
-                print(i, hex(i), self.PiicoDev_list[i]['short_name'])
-            else:	# assume 'what'
-                print(i, hex(i), self.PiicoDev_list[i]['what'])
+            self.print_main(i, mode)
+#            if mode == 'long':
+#                print(i, hex(i), self.PiicoDev_list[i]['long_name'])
+#            elif mode == 'short':
+#                print(i, hex(i), self.PiicoDev_list[i]['short_name'])
+#            else:	# assume 'what'
+#                print(i, hex(i), self.PiicoDev_list[i]['what'])
         if conf != 'noshow':
             print('-- conflicting --')
             for i in sorted(self.PiicoDev_conf_list):
-                if mode == 'long':
-                    print(i, hex(i), self.PiicoDev_conf_list[i]['long_name'])
-                elif mode == 'short':
-                    print(i, hex(i), self.PiicoDev_conf_list[i]['short_name'])
-                else:	# assume 'what'
-                    print(i, hex(i), self.PiicoDev_conf_list[i]['what'])
+                self.print_conf(i, mode)
+#                if mode == 'long':
+#                    print(i, hex(i), self.PiicoDev_conf_list[i]['long_name'])
+#                elif mode == 'short':
+#                    print(i, hex(i), self.PiicoDev_conf_list[i]['short_name'])
+#                else:	# assume 'what'
+#                    print(i, hex(i), self.PiicoDev_conf_list[i]['what'])
                 
+#
+# Print common functions
+#
+    def print_main(self, id, mode):
+        if mode == 'long':
+            s = self.PiicoDev_list[id]['long_name']
+        elif mode == 'short':
+            s = self.PiicoDev_list[id]['short_name']
+        else:   # assume 'what'
+            s = self.PiicoDev_list[id]['what']
+        print(id, hex(id), s)
+
+    def print_conf(self, id, mode):
+        if mode == 'long':
+            s = self.PiicoDev_conf_list[id]['long_name']
+        elif mode == 'short':
+            s = self.PiicoDev_conf_list[id]['short_name']
+        else:   # assume 'what'
+            s = self.PiicoDev_conf_list[id]['what']
+        print(id, hex(id), s)
+
 # end of  class
 
 if _Debug:
@@ -564,7 +625,9 @@ if _Debug:
     tests.details()
     tests.details('short')
     tests.details('long')
-
+    print('************')
+    tests.details('what', extern_list)
+    print('************')
     aa = tests.is_ID_connected(119)
     print(aa)
 
