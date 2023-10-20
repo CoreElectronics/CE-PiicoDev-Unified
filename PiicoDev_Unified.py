@@ -178,11 +178,9 @@ def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warning
         i2c = I2CUnifiedMachine(bus=bus, freq=freq, sda=sda, scl=scl)
     return i2c
 
-
+######################################
 #
 # PiicoDev devices presence tests
-#
-# Mjt 20231016
 #
 
 _Debug = 0	# can be chucked out, used to print short WIP messages, and to execute the function tests.
@@ -190,17 +188,16 @@ _Debug = 0	# can be chucked out, used to print short WIP messages, and to execut
 
 class PiicoDev_test():
     """
-    # PiicoDev devices presence tests
-    #
-    # Mjt 20231016
+    PiicoDev devices presence tests
+    Murray T 20231020   (v 1.0)
 
     the simple tests without this module
     ------------------------------------
     i2c = I2C(id=0)         # PiicoDev chain on i2c channel 0
     connected = i2c.scan()  # whats connected
-    print(connected)
-    for i in connected:
-        print(i, hex(i))
+    print(connected)        # prints decimal list
+    for i in connected:     # prints hexadecimal list
+        print(i, hex(i))    #  /
 
     What this module provides
     =========================
@@ -211,15 +208,14 @@ class PiicoDev_test():
     OR
         # for an alternate i2c bus on GPIO6 and GPOI7
         test_altbus = PiicoDev_test(id=1, scl=Pin(7), sda=Pin(6))
-       
     
     Immediately after this you can display what has been detected on the default i2c bus by either
     
         print(tests.connected)
     or
-        tests.show()
+        tests.show_int()
 
-    these print a list of detected i2c ID's
+    these print a list of detected i2c ID's in decimal
         [16, 60, 82, 83, 119]
         
     Available functions
@@ -231,7 +227,7 @@ class PiicoDev_test():
         is_ID_connected(id)     - returns 1 if the ID is in the list, otherwise 0
         how_many_connected()    - returns count of detected ID's
         
-        details()               - prints 'human name' of the connected ID's e.g. 'OLED Module'
+        details()               - prints 'human name' of the connected ID's e.g. 'OLED Module' (default is 'what')
             details('what')     - prints 'human name' of the connected ID's e.g. 'OLED Module'       
             details('short')    - prints 'short_name' of the connected ID's e.g. 'SSD1306'
             details('long')     - prints 'long_name' of the connected ID's e.g. 'PiicoDev OLED Module SSD1306'
@@ -250,19 +246,19 @@ class PiicoDev_test():
                     'short_name': 'MFR code'},
             }
 
-        then calliing the details() function as below _AFTER_ the user dictionary is defined, will
+        then calling the details() function as below _AFTER_ the user dictionary is defined, will
         display this if the LTR390 is in the connected devices list
         
             details('what', extern_list ) - prints 'human name' of the connected ID's e.g. 'Ambient Light-UV Sensor'       
             details('short', extern_list) - prints 'short_name' of the connected ID's e.g. 'LTR390'
             details('long', extern_list)  - prints 'long_name' of the connected ID's e.g. 'Adafruit LTR390 Ambient Light-UV Sensor'
 
-        what_is(id)             - prints 'human name' of the given ID e.g. 'RGB LED Module'
+        what_is(id)             - prints 'human name' of the given ID e.g. 'RGB LED Module' (default is 'what')
             what_is(id, 'what') - prints 'human name' of the given ID e.g. 'RGB LED Module'
             what_is(id, 'short')- prints 'short_name' of the given ID e.g. 'LED'
             what_is(id, 'long') - prints 'long_name' of the given ID e.g. 'PiicoDev 3x RGB LED Module'
             
-        show_all()              - prints all 'human names' from the main internal dictonary
+        show_all()              - prints all 'human names' from the main internal dictonary (default is 'what')
             show_all('what')    - prints all 'human names' from the main internal dictonary
             show_all('short')   - prints all 'short names' from the main internal dictonary
             show_all('long')    - prints all 'long names' from the main internal dictonary
@@ -273,11 +269,13 @@ class PiicoDev_test():
             
     Address conflicts
     -----------------
-    Where possible this module will highlight potential conflicts, since some PiicoDev devices
+    Where appropriate this module will provide information about potential conflicts, since some PiicoDev devices
     do have addresses that could collide. This can be dealt with by setting the module address switch (ASW)
     to a non default setting (if available), OR by programatically changing the device address if possible.
     
-    This module only 'knows' about PiicoDev devices.
+    This module only 'knows' about PiicoDev devices, however an external dictionary can be provided by the user.
+    
+    ** The module CANNOT detect an actual address conflict on a given i2c bus. This is a characteristic of the bus itself.
     
     'Constant' values
     -----------------
@@ -285,11 +283,15 @@ class PiicoDev_test():
     if available the alternate address that can be selected by changing the address switch (ASW)
     (at this time only one alternate is provided)
     
-    These constants can be used after instantiation in user code
+    These constants can be used after instantiation in user code if prefixed with instantiated classname
     
         tests.__BME280_ID       # ==  0x77 or 119. this is a fixed address
         tests.__VEML6030_0_ID   # ==  0x10 or 16.  this is the value when the ASW is OFF  
         tests.__VEML6030_1_ID   # ==  0x48 or 72.  this is the value is the ASW is ON  
+
+        tests = PiicoDev_test()
+        if tests.is_ID_connected(tests.__BME280_ID):
+            print('have BME280')
     
     NOTE: =============================================================================
     NOTE:
@@ -304,16 +306,8 @@ class PiicoDev_test():
     # declare "CONSTANTS"
     # these are used to uniquely identify the various (conflicting) PiicoDev addresses
     #  note the 'conflict' markers   ----vv   and    ----^^
-    #
-    #  can use outside the class if prefixed with instantiated classname
-    #  i.e.
-    #
-    # tests = PiicoDev_test()
-    # if tests.is_ID_connected(tests.__BME280_ID):
-    #    print('have BME280')
-    #
 
-    __LED_ID = 0x8                      # 8.      RGB LEDS
+    __LED_ID = 0x8				# 8.      RGB LEDS
                                 # ----vv
     __VEML6030_0_ID = 0x10		# 16. xx  Light sensor (ASW off)
     __VEML6040_ID = 0x10		# 16. xx  Colour sensor
@@ -327,7 +321,7 @@ class PiicoDev_test():
     __RFID_ID = 0x2c			# 44.     RFID module
                                 # ----vv
     __ULTRASONIC_ID = 0x35		# 53. xx  Ultrasonic rangefinder
-    __POTENTIOMETER_ID = 0x35           # 53. xx  Potentiometer
+    __POTENTIOMETER_ID = 0x35	# 53. xx  Potentiometer
                                 # ----^^
     __SSD1306_ID = 0x3c			# 60.     OLED display
     __BUTTON_ID = 0x42			# 66.     Pushbutton
@@ -454,7 +448,6 @@ class PiicoDev_test():
             'short_name': 'ENS160 (ASW on)'},
     }
 
-
     #
     # PiicoDev defaults pre-defined
     # can be overloaded with other values if needed to establish a second/alternate i2c bus
@@ -463,19 +456,24 @@ class PiicoDev_test():
         self.i2c = I2C(id=id, scl=scl, sda=sda, freq=freq)
         self.connected = self.i2c.scan()
         
+    # clear() - clears the list of connected i2c devices
     def clear(self):
         self.connected = []
         
+    # rescan() - clears and rescans the default i2c bus and repopulates the list
     def rescan(self):
         self.connected = []
         self.connected = self.i2c.scan()
     
+    # show_int() - prints the list of connected ID's in DECIMAL detected by the original/most recent scan
     def show_int(self):
         print(self.connected)
     
+    # show_hex() - prints the list of connected ID's in HEXADECIMAL detected by the original/most recent scan
     def show_hex(self):
         print( [hex(i) for i in self.connected] )
 
+    # is_ID_connected(id) - returns 1 if the ID is in the list, otherwise 0
     def is_ID_connected(self, id):
         if _Debug == 1:
             print('is_ID_connected(',id,')')
@@ -484,39 +482,27 @@ class PiicoDev_test():
         else:
             return(0)
     
+    # how_many_connected() - returns count of detected ID's
     def how_many_connected(self):
         if _Debug == 1:
             print('how_many__connected()')
         return(len(self.connected))
 
+    # details() - prints various levels of information of the connected ID's
     def details(self, mode='what', extlist=None):
         if _Debug == 1:
             print('details(',mode,')')
         if len(self.connected) == 0:
-            print('nothing connected')
+            print('Nothing connected')
         else:
             for i in self.connected:
                 hit = 0
                 if i in self.PiicoDev_list:
                     self.print_main(i, mode)
-#                    if mode == 'long':
-#                        s = self.PiicoDev_list[i]['long_name']
-#                    elif mode == 'short':
-#                        s = self.PiicoDev_list[i]['short_name']
-#                    else:   # assume 'what'
-#                        s = self.PiicoDev_list[i]['what']
-#                    print(i, hex(i), s)
                     hit = 1
                 if i in self.PiicoDev_conf_list:
                     print('   vvv Possible conflict vvv')
                     self.print_conf(i, mode)
-#                    if mode == 'long':
-#                        s = self.PiicoDev_conf_list[i]['long_name']
-#                    elif mode == 'short':
-#                        s = self.PiicoDev_conf_list[i]['short_name']
-#                    else:   # assume 'what'
-#                        s = self.PiicoDev_conf_list[i]['what']
-#                    print(i, hex(i), s, '<<<<< Possible conflict')
                     hit = 1
                 if extlist != None:
                     if i in extlist:
@@ -532,55 +518,30 @@ class PiicoDev_test():
                 if hit == 0:
                     print('Unknown device at ID ', i)
 
+    # what_is(id) - prints various levels of information from the dictionaries of the given ID
     def what_is(self, id, mode='what'):
         hit = 0
         if id in self.PiicoDev_list:
             self.print_main(id, mode)
-#            if mode == 'long':
-#                s = self.PiicoDev_list[id]['long_name']
-#            elif mode == 'short':
-#                s = self.PiicoDev_list[id]['short_name']
-#            else:   # assume 'what'
-#                s = self.PiicoDev_list[id]['what']
-#            print('Found:', id, hex(id), s)
             hit = 1
         if id in self.PiicoDev_conf_list:
             print('   vvv Possible conflict vvv')
             self.print_conf(id, mode)
-#            if mode == 'long':
-#                s = self.PiicoDev_conf_list[id]['long_name']
-#            elif mode == 'short':
-#                s = self.PiicoDev_conf_list[id]['short_name']
-#            else:   # assume 'what'
-#                s = self.PiicoDev_conf_list[id]['what']
-#            print('Found but possible conflict:', id, hex(id), s)
             hit = 1
         if hit == 0:
             print('Unknown ID ', id)
 
+    # show_all() - prints various levels of information from the main/conflict internal dictonaries
     def show_all(self, mode='what', conf='noshow' ):
         for i in sorted(self.PiicoDev_list):
             self.print_main(i, mode)
-#            if mode == 'long':
-#                print(i, hex(i), self.PiicoDev_list[i]['long_name'])
-#            elif mode == 'short':
-#                print(i, hex(i), self.PiicoDev_list[i]['short_name'])
-#            else:	# assume 'what'
-#                print(i, hex(i), self.PiicoDev_list[i]['what'])
         if conf != 'noshow':
             print('-- conflicting --')
             for i in sorted(self.PiicoDev_conf_list):
                 self.print_conf(i, mode)
-#                if mode == 'long':
-#                    print(i, hex(i), self.PiicoDev_conf_list[i]['long_name'])
-#                elif mode == 'short':
-#                    print(i, hex(i), self.PiicoDev_conf_list[i]['short_name'])
-#                else:	# assume 'what'
-#                    print(i, hex(i), self.PiicoDev_conf_list[i]['what'])
                 
-#
-# Print common functions
-#
+    # Print common functions
+    # print information from  the main dictionary
     def print_main(self, id, mode):
         if mode == 'long':
             s = self.PiicoDev_list[id]['long_name']
@@ -590,6 +551,7 @@ class PiicoDev_test():
             s = self.PiicoDev_list[id]['what']
         print(id, hex(id), s)
 
+    # print information from  the conflicts dictionary
     def print_conf(self, id, mode):
         if mode == 'long':
             s = self.PiicoDev_conf_list[id]['long_name']
@@ -599,7 +561,10 @@ class PiicoDev_test():
             s = self.PiicoDev_conf_list[id]['what']
         print(id, hex(id), s)
 
+#
 # end of  class
+#
+###########################################
 
 if _Debug:
     tests = PiicoDev_test()
@@ -625,9 +590,6 @@ if _Debug:
     tests.details()
     tests.details('short')
     tests.details('long')
-    print('************')
-    tests.details('what', extern_list)
-    print('************')
     aa = tests.is_ID_connected(119)
     print(aa)
 
