@@ -190,6 +190,7 @@ class PiicoDev_test():
     """
     PiicoDev devices presence tests
     Murray T 20231020   (v 1.0)
+    @Murray125532
 
     the simple tests without this module
     ------------------------------------
