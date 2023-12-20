@@ -77,7 +77,7 @@ class I2CUnifiedMachine(I2CBase):
         return self.i2c.readfrom(addr, 2)
         
     def scan(self):
-		print([hex(i) for i in self.i2c.scan()])
+        print([hex(i) for i in self.i2c.scan()])
 
 class I2CUnifiedMicroBit(I2CBase):
     def __init__(self, freq=None):
@@ -104,8 +104,8 @@ class I2CUnifiedMicroBit(I2CBase):
         i2c.write(addr, reg, repeat=True)
         return i2c.read(addr, 2)
             
-	def scan(self):
-		print([hex(i) for i in self.i2c.scan()])
+    def scan(self):
+        print([hex(i) for i in self.i2c.scan()])
 
 class I2CUnifiedLinux(I2CBase):
     def __init__(self, bus=None, suppress_warnings=True):
@@ -177,7 +177,7 @@ class I2CUnifiedLinux(I2CBase):
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
 
     def scan(self):
-		print([hex(i) for i in self.i2c.scan()])
+        print([hex(i) for i in self.i2c.scan()])
 
 
 def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=True):
