@@ -1,4 +1,4 @@
-'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2021       M.Ruppe - Initial Unified Driver\n    - 2022-10-13 P.Johnston - Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe - Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n    - 2023-01-31 L.Howell - Add minimal support for ESP32\n    - 2023-05-17 M.Ruppe - Make I2CUnifiedMachine() more flexible on initialisation. Frequency is optional.\n'
+'\nPiicoDev.py: Unifies I2C drivers for different builds of MicroPython\nChangelog:\n    - 2021       M.Ruppe - Initial Unified Driver\n    - 2022-10-13 P.Johnston - Add helptext to run i2csetup script on Raspberry Pi \n    - 2022-10-14 M.Ruppe - Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)\n    - 2023-01-31 L.Howell - Add minimal support for ESP32\n    - 2023-05-17 M.Ruppe - Make I2CUnifiedMachine() more flexible on initialisation. Frequency is optional.\n    - 2023-12-20 M.Taylor - added scan() function for quick userland test of connected i2c modules\n'
 _F='address must be 8 or 16 bits long only'
 _E='microbit'
 _D=False
@@ -36,6 +36,7 @@ class I2CUnifiedMachine(I2CBase):
 		if reg is _A:A.i2c.writeto(addr,data)
 		else:A.i2c.writeto(addr,reg+data)
 	def read16(A,addr,reg):A.i2c.writeto(addr,reg,_D);return A.i2c.readfrom(addr,2)
+	def scan(A):print([hex(A)for A in A.i2c.scan()])
 class I2CUnifiedMicroBit(I2CBase):
 	def __init__(B,freq=_A):
 		A=freq
@@ -46,6 +47,7 @@ class I2CUnifiedMicroBit(I2CBase):
 		if reg is _A:i2c.write(addr,data)
 		else:i2c.write(addr,reg+data)
 	def read16(A,addr,reg):i2c.write(addr,reg,repeat=_B);return i2c.read(addr,2)
+	def scan(A):print([hex(A)for A in A.i2c.scan()])
 class I2CUnifiedLinux(I2CBase):
 	def __init__(D,bus=_A,suppress_warnings=_B):
 		C='/boot/config.txt';B=bus
@@ -82,6 +84,7 @@ class I2CUnifiedLinux(I2CBase):
 		if reg is _A:A=int.from_bytes(data,_C);B.i2c.write_byte(addr,A)
 		else:C=int.from_bytes(reg,_C);A=int.from_bytes(data,_C);B.i2c.write_byte_data(addr,C,A)
 	def read16(A,addr,reg):B=int.from_bytes(reg,_C);return A.i2c.read_word_data(addr,B).to_bytes(2,byteorder='little',signed=_D)
+	def scan(A):print([hex(A)for A in A.i2c.scan()])
 def create_unified_i2c(bus=_A,freq=_A,sda=_A,scl=_A,suppress_warnings=_B):
 	if _SYSNAME==_E:A=I2CUnifiedMicroBit(freq=freq)
 	elif _SYSNAME=='Linux':A=I2CUnifiedLinux(bus=bus,suppress_warnings=suppress_warnings)
