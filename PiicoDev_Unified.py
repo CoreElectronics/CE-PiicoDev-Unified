@@ -6,6 +6,7 @@ Changelog:
     - 2022-10-14 M.Ruppe - Explicitly set default I2C initialisation parameters for machine-class (Raspberry Pi Pico + W)
     - 2023-01-31 L.Howell - Add minimal support for ESP32
     - 2023-05-17 M.Ruppe - Make I2CUnifiedMachine() more flexible on initialisation. Frequency is optional.
+    - 2023-12-20 M.Taylor - added scan() function for quick userland test of connected i2c modules
 '''
 import os
 _SYSNAME = os.uname().sysname
@@ -74,6 +75,9 @@ class I2CUnifiedMachine(I2CBase):
     def read16(self, addr, reg):
         self.i2c.writeto(addr, reg, False)
         return self.i2c.readfrom(addr, 2)
+        
+    def scan(self):
+		print([hex(i) for i in self.i2c.scan()])
 
 class I2CUnifiedMicroBit(I2CBase):
     def __init__(self, freq=None):
@@ -100,6 +104,9 @@ class I2CUnifiedMicroBit(I2CBase):
         i2c.write(addr, reg, repeat=True)
         return i2c.read(addr, 2)
             
+	def scan(self):
+		print([hex(i) for i in self.i2c.scan()])
+
 class I2CUnifiedLinux(I2CBase):
     def __init__(self, bus=None, suppress_warnings=True):
         if suppress_warnings == False:
@@ -168,6 +175,10 @@ class I2CUnifiedLinux(I2CBase):
     def read16(self, addr, reg):
         regInt = int.from_bytes(reg, 'big')
         return self.i2c.read_word_data(addr, regInt).to_bytes(2, byteorder='little', signed=False)
+
+    def scan(self):
+		print([hex(i) for i in self.i2c.scan()])
+
 
 def create_unified_i2c(bus=None, freq=None, sda=None, scl=None, suppress_warnings=True):
     if _SYSNAME == 'microbit':
