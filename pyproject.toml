@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "piicodev-unified"
+version = "1.10.1"
+description = "Drivers for the PiicoDev ecosystem of sensors and modules"
+authors = ["Core Electronics <production.inbox@coreelectronics.com.au>"]
+license = "MIT"
+readme = "README.md"
+classifiers=[
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: Implementation :: MicroPython",
+        "License :: OSI Approved :: MIT License",
+    ]
+
+packages = [
+    { include = "PiicoDev_Unified.py" }
+]
+
+[project.urls]
+Homepage = "https://github.com/CoreElectronics/CE-PiicoDev-Unified"
+Documentation = "https://github.com/CoreElectronics/CE-PiicoDev-Unified/blob/main/doc/METHODS.md"
+Repository = "https://github.com/CoreElectronics/CE-PiicoDev-Unified"
+Issues = "https://github.com/CoreElectronics/CE-PiicoDev-Unified/issues"
+#Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+
+# Linux only
+smbus2 = { version = "*", markers = "sys_platform == 'linux'"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
