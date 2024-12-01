@@ -109,22 +109,25 @@ class I2CUnifiedMicroBit(I2CBase):
 
 class I2CUnifiedLinux(I2CBase):
     def __init__(self, bus=None, suppress_warnings=True):
-        if suppress_warnings == False:
-            with open('/boot/config.txt') as config_file:
-                if 'dtparam=i2c_arm=on' in config_file.read():
-                    pass
-                else:
+        config_path = '/boot/firmware/config.txt' if self._is_bookworm() else '/boot/config.txt'
+        
+        if not suppress_warnings and os.path.exists(config_path):
+            with open(config_path) as f:
+                content = f.read()
+                if 'dtparam=i2c_arm=on' not in content:
                     print('I2C is not enabled. To enable' + setupi2c_str)
-                config_file.close()
-            with open('/boot/config.txt') as config_file:
-                if 'dtparam=i2c_arm_baudrate=400000' in config_file.read():
-                    pass
-                else:
+                if 'dtparam=i2c_arm_baudrate=400000' not in content:
                     print('Slow baudrate detected. If glitching occurs' + setupi2c_str)
-                config_file.close()
-        if bus is None:
-            bus = 1
-        self.i2c = SMBus(bus)
+        
+        self.i2c = SMBus(bus or 1)
+    
+    def _is_bookworm(self):
+        try:
+            with open('/etc/os-release') as f:
+                return any(float(line.split('=')[1].strip('"')) >= 12 
+                          for line in f if line.startswith('VERSION_ID='))
+        except:
+            return False
 
     def readfrom_mem(self, addr, memaddr, nbytes, *, addrsize=8):
         data = [None] * nbytes # initialise empty list
